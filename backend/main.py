@@ -58,6 +58,11 @@ async def ask(request: Request):
     # Fase 4: Análise completa do histórico de chamados
     decision_object = insight_engine.run()
 
+    import json
+    print("DECISION_OBJECT:")
+    print(json.dumps(decision_object, indent=2, ensure_ascii=False))
+
+
     # Prompt rico e profissional enviado ao Mistral
     prompt = f"""
 Você é uma IA de atendimento técnico integrada ao sistema de chamados.
