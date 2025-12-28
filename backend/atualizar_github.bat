@@ -14,3 +14,5 @@ git commit -m "Atualização completa: correções finais, frontend funcional, i
 
 # 5. Envie tudo para o GitHub
 git push origin main
+
+pause
