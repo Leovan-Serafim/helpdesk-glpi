@@ -1,0 +1,1 @@
+print("Ambiente HelpDesk Mock GLPI pronto")
