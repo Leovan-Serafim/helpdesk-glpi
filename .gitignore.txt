@@ -42,3 +42,6 @@ db.sqlite3
 .env
 config.local.py
 secrets.py
+atualizar_github.bat
+recriar_banco.bat
+start_serve.bat
