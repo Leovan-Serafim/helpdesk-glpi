@@ -7,9 +7,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from analytics.insight_engine import InsightEngine
-from attendance.llm_client import LLMClient  # Seu cliente robusto e perfeito
+from attendance.llm_client import LLMClient
+from db_connection import get_db_connection
 
-app = FastAPI(title="Helpdesk GLPI com Inteligência Artificial (Ollama + Mistral)")
+app = FastAPI(
+    title="Helpdesk GLPI com Inteligência Artificial (Ollama + Mistral)"
+)
 
 # Configuração de arquivos estáticos e templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -17,7 +20,7 @@ templates = Jinja2Templates(directory="templates")
 
 # Instâncias das engines
 insight_engine = InsightEngine()
-llm = LLMClient(model="mistral")  # ← Usando o Mistral que você já baixou
+llm = LLMClient(model="mistral")
 
 
 @app.get("/")
@@ -57,48 +60,47 @@ async def ask(request: Request):
 
     # Prompt rico e profissional enviado ao Mistral
     prompt = f"""
-Você é um analista de helpdesk altamente objetivo e conciso. Responda SEMPRE de forma curta, direta e factual.
+Você é uma IA de atendimento técnico integrada ao GLPI.
 
-Regras obrigatórias:
-- Responda sempre de forma curta e objetiva.
-- Use no máximo 3 frases.
-- Não repita informações já implícitas na pergunta.
-- Não explique o raciocínio interno.
-- Só detalhe se o usuário pedir explicitamente.
+REGRAS OBRIGATÓRIAS:
+- Responda com UMA ÚNICA resposta.
+- Seja direto, humano e objetivo.
+- NÃO invente dados.
+- NÃO infira prioridade, recorrência, impacto ou urgência sem campos explícitos.
+- Use APENAS as informações presentes nos dados.
+- Se não for possível responder com os dados disponíveis, diga claramente que não é possível determinar.
+- Para perguntas quantitativas, calcule com precisão.
+- Não explique raciocínio interno.
+- Não sugira ações sem base nos dados.
 
-### Análise automatizada atual do helpdesk:
-{json.dumps(decision_object, indent=2, ensure_ascii=False, default=str)}
+### DADOS ATUAIS DO HELPDESK (fonte única da verdade):
+{json.dumps(decision_object, ensure_ascii=False, default=str)}
 
-### Pergunta do usuário:
+### PERGUNTA DO USUÁRIO:
 {question}
 
-Responda em português, de forma clara, objetiva e estruturada usando bullet points.
-Responda em português, apenas com informações essenciais.
-Formato obrigatório:
-- Frase 1: resposta direta.
-- Frase 2: contexto mínimo (se necessário).
-- Frase 3: ação recomendada (opcional).
-
-Seja assertivo, evite rodeios e foque no que precisa ser feito agora.
+INSTRUÇÕES DE RESPOSTA:
+- Use no máximo 2 frases.
+- Linguagem natural, sem listas ou bullets.
+- Responda apenas o que foi perguntado.
 """
 
     try:
-        # Chama o método correto do seu LLMClient
         resposta = llm.generate(prompt)
     except Exception as e:
         resposta = (
-            "Não foi possível gerar resposta no momento.\n"
-            f"Erro técnico: {str(e)}\n\n"
-            "Dica: Verifique se o Ollama está rodando com 'ollama serve'"
+            "Não foi possível gerar resposta no momento. "
+            f"Erro técnico: {str(e)}. "
+            "Verifique se o Ollama está rodando com 'ollama serve'."
         )
 
-    # Retorno para o frontend
-    return JSONResponse({
-        "resposta": resposta,
-        "decisao": decision_object  # opcional: útil para debug futuro
-    })
+    return JSONResponse(
+        {
+            "resposta": resposta,
+            "decisao": decision_object  # útil para debug futuro
+        }
+    )
 
-from db_connection import get_db_connection
 
 @app.get("/chamados")
 def listar_chamados(request: Request):
@@ -108,7 +110,13 @@ def listar_chamados(request: Request):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, categoria, problema, status, data_abertura FROM chamados ORDER BY data_abertura DESC")
+        cursor.execute(
+            """
+            SELECT id, categoria, problema, status, data_abertura
+            FROM chamados
+            ORDER BY data_abertura DESC
+            """
+        )
         chamados = [dict(row) for row in cursor.fetchall()]
     except Exception as e:
         chamados = []
