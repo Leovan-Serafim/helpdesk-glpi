@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from analytics.insight_engine import InsightEngine
+from analytics.insight_engine2 import InsightEngine
 from attendance.llm_client import LLMClient
 from db_connection import get_db_connection
 
@@ -60,30 +60,26 @@ async def ask(request: Request):
 
     # Prompt rico e profissional enviado ao Mistral
     prompt = f"""
-Você é uma IA de atendimento técnico integrada ao GLPI.
+Você é uma IA de atendimento técnico integrada ao sistema de chamados.
 
 REGRAS OBRIGATÓRIAS:
-- Responda com UMA ÚNICA resposta.
-- Seja direto, humano e objetivo.
-- NÃO invente dados.
-- NÃO infira prioridade, recorrência, impacto ou urgência sem campos explícitos.
-- Use APENAS as informações presentes nos dados.
-- Se não for possível responder com os dados disponíveis, diga claramente que não é possível determinar.
-- Para perguntas quantitativas, calcule com precisão.
-- Não explique raciocínio interno.
-- Não sugira ações sem base nos dados.
+- Use APENAS os dados fornecidos.
+- NÃO invente informações.
+- NÃO infira prioridade, impacto ou recorrência.
+- Responda em português.
+- Use no máximo 2 frases.
+- Seja direto e humano.
+- Se a informação não existir, diga que não é possível determinar.
 
-### DADOS ATUAIS DO HELPDESK (fonte única da verdade):
-{json.dumps(decision_object, ensure_ascii=False, default=str)}
+DADOS DO SISTEMA (JSON – fonte única da verdade):
+{json.dumps(decision_object, ensure_ascii=False)}
 
-### PERGUNTA DO USUÁRIO:
+PERGUNTA DO USUÁRIO:
 {question}
 
-INSTRUÇÕES DE RESPOSTA:
-- Use no máximo 2 frases.
-- Linguagem natural, sem listas ou bullets.
-- Responda apenas o que foi perguntado.
+RESPOSTA:
 """
+
 
     try:
         resposta = llm.generate(prompt)
