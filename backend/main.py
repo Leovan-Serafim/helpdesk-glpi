@@ -36,10 +36,6 @@ def home(request: Request):
 
 @app.post("/ask")
 async def ask(request: Request):
-    """
-    Endpoint principal para perguntas do usuário.
-    Recebe {"question": "sua pergunta"}
-    """
     try:
         data = await request.json()
     except Exception:
@@ -55,28 +51,53 @@ async def ask(request: Request):
             status_code=400
         )
 
-    # Fase 4: Análise completa do histórico de chamados
+    # === NOVA PARTE: Consulta fresca dos chamados abertos ===
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, categoria, problema, status, data_abertura
+            FROM chamados
+            WHERE status = 'Aberto'
+            ORDER BY data_abertura DESC
+            """
+        )
+        chamados_abertos = [dict(row) for row in cursor.fetchall()]
+        total_abertos = len(chamados_abertos)
+    except Exception as e:
+        chamados_abertos = []
+        total_abertos = 0
+        print(f"Erro ao ler chamados abertos: {e}")
+    finally:
+        conn.close()
+    # ========================================================
+
+    # Fase 4: Análise completa do histórico de chamados (mantém o que já existe)
     decision_object = insight_engine.run()
 
     import json
     print("DECISION_OBJECT:")
     print(json.dumps(decision_object, indent=2, ensure_ascii=False))
 
-
-    # Prompt rico e profissional enviado ao Mistral
+    # Prompt enriquecido com dados reais e atuais
     prompt = f"""
-Você é uma IA de atendimento técnico integrada ao sistema de chamados.
+Você é uma IA de atendimento técnico integrada ao sistema GLPI Inovit.
 
 REGRAS OBRIGATÓRIAS:
-- Use APENAS os dados fornecidos.
-- NÃO invente informações.
-- NÃO infira prioridade, impacto ou recorrência.
+- Use APENAS os dados fornecidos abaixo.
+- NÃO invente informações ou números.
+- Para perguntas sobre quantidade ou lista de chamados em aberto, use EXATAMENTE os dados da seção "CHAMADOS EM ABERTO ATUALIZADOS".
 - Responda em português.
-- Use no máximo 2 frases.
-- Seja direto e humano.
-- Se a informação não existir, diga que não é possível determinar.
+- Use no máximo 3 frases.
+- Seja direto, profissional e humano.
 
-DADOS DO SISTEMA (JSON – fonte única da verdade):
+CHAMADOS EM ABERTO ATUALIZADOS (fonte da verdade - atualizado agora):
+Total em aberto: {total_abertos}
+Lista completa:
+{json.dumps(chamados_abertos, ensure_ascii=False, indent=2)}
+
+ANÁLISE DE RECORRÊNCIA E INSIGHTS (do motor analítico):
 {json.dumps(decision_object, ensure_ascii=False)}
 
 PERGUNTA DO USUÁRIO:
@@ -84,7 +105,6 @@ PERGUNTA DO USUÁRIO:
 
 RESPOSTA:
 """
-
 
     try:
         resposta = llm.generate(prompt)
@@ -98,7 +118,7 @@ RESPOSTA:
     return JSONResponse(
         {
             "resposta": resposta,
-            "decisao": decision_object  # útil para debug futuro
+            "decisao": decision_object
         }
     )
 

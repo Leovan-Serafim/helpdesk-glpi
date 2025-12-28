@@ -10,7 +10,7 @@ git status
 git add .
 
 # 4. Faça o commit com uma mensagem clara
-git commit -m "Atualização completa: correções finais, frontend funcional, integração Ollama/Mistral e página de chamados"
+git commit -m "Atualização completa: correções finais, frontend funcional, integração Ollama/Mistral, página de chamados, decision_object gerado por insight_engine.run() corrigido
 
 # 5. Envie tudo para o GitHub
 git push origin main
