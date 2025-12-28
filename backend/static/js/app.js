@@ -1,5 +1,3 @@
-// backend/static/js/app.js
-
 document.addEventListener("DOMContentLoaded", () => {
     const input = document.getElementById("pergunta");
     const sendButton = document.getElementById("enviar");
@@ -23,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                // ← Correção principal: chave "question" (não "pergunta")
                 body: JSON.stringify({ question: pergunta })
             });
 
@@ -32,26 +29,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const data = await response.json();
-
-            // ← Usa a chave correta que o backend retorna
             const respostaIA = data.resposta || "Sem resposta do servidor.";
 
-            // Substitui o "pensando..." pela resposta real
-            chatBox.lastChild.innerHTML = `<strong>IA:</strong> ${respostaIA.replace(/\n/g, "<br>")}`;
+            chatBox.lastChild.innerHTML =
+                `<strong>IA:</strong> ${respostaIA.replace(/\n/g, "<br>")}`;
+
             chatBox.scrollTop = chatBox.scrollHeight;
 
         } catch (erro) {
             console.error(erro);
-            chatBox.lastChild.innerHTML = `<strong>IA:</strong> <em style="color: red;">Erro: ${erro.message}</em>`;
+            chatBox.lastChild.innerHTML =
+                `<strong>IA:</strong> <em style="color:red;">Erro: ${erro.message}</em>`;
         }
     };
 
-    // Enviar com botão
+    // Clique no botão
     sendButton.addEventListener("click", enviarPergunta);
 
-    // Enviar com Enter
-    input.addEventListener("keypress", (e) => {
+    // Enter no input
+    input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
+            e.preventDefault();
             enviarPergunta();
         }
     });
