@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GLPI Inovit — IA de Atendimento</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -16,8 +17,8 @@
     <div class="chat-box" id="chatBox"></div>
 
     <div class="input-area">
-        <input type="text" id="pergunta" placeholder="Digite sua pergunta...">
-        <button onclick="enviarPergunta()">Enviar</button>
+        <input type="text" id="pergunta" placeholder="Digite sua pergunta..." autocomplete="off">
+        <button id="enviar">Enviar</button>
     </div>
 </div>
 

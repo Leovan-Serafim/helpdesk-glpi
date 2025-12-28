@@ -1,4 +1,4 @@
-from analytics.insight_engine2 import InsightEngine
+from analytics.insight_engine import InsightEngine
 from attendance.responder import IAResponder
 
 

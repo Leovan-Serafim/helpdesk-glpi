@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chamados - GLPI Inovit</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #2c3e50; color: white; }
+        tr:hover { background-color: #f5f5f5; }
+        .status-aberto { color: #e74c3c; font-weight: bold; }
+        .status-fechado { color: #27ae60; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GLPI Inovit</h1>
+            <p>Lista de Chamados</p>
+            <a href="/" style="color: white; text-decoration: none;">← Voltar ao Assistente</a>
+        </header>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Categoria</th>
+                    <th>Problema</th>
+                    <th>Status</th>
+                    <th>Data Abertura</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chamado in chamados %}
+                <tr>
+                    <td>{{ chamado.id }}</td>
+                    <td>{{ chamado.categoria }}</td>
+                    <td>{{ chamado.problema }}</td>
+                    <td class="status-{{ chamado.status.lower().replace(' ', '-') }}">
+                        {{ chamado.status.title() }}
+                    </td>
+                    <td>{{ chamado.data_abertura }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Nenhum chamado encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

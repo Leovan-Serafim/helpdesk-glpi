@@ -1,4 +1,4 @@
-from analytics.insight_engine2 import generate_insights
+from analytics.insight_engine import generate_insights
 
 
 def test_phase4():
