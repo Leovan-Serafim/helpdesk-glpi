@@ -82,7 +82,7 @@ async def ask(request: Request):
 
     # Prompt enriquecido com dados reais e atuais
     prompt = f"""
-Você é uma IA de atendimento técnico integrada ao sistema GLPI Inovit.
+Você se chama Roberval e é uma IA de atendimento técnico integrada ao sistema GLPI Inovit.
 
 REGRAS OBRIGATÓRIAS:
 - Use APENAS os dados fornecidos abaixo.
