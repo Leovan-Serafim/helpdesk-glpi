@@ -32,9 +32,17 @@ class InsightEngine:
         # Detecção de recorrência
         incidents = detect_recurrence(history)
 
+        # Inicializa variáveis de decisão padrão para evitar erro caso não haja incidentes
+        decision = {
+            "status": "normal",
+            "priority": "low",
+            "escalate": False,
+            "actions": []
+        }
+
         for incident in incidents:
-            # Correlação operacional
-            correlation = correlate_incident(incident)
+            # Correlação operacional - Passando o contexto necessário (incidents)
+            correlation = correlate_incident(incident, incidents)
 
             # Decisão explicável
             decision = suggest_action(correlation)
@@ -45,7 +53,7 @@ class InsightEngine:
                 "decisao": decision
             })
 
-        # Consolidação para a Fase 5
+        # Consolidação para a Fase 5 (Dicionário completo para o Responder)
         final_decision = {
             "status": decision.get("status"),
             "priority": decision.get("priority"),
@@ -58,3 +66,17 @@ class InsightEngine:
         }
 
         return final_decision
+
+# --- Função de Compatibilidade para Testes (Fase 4) ---
+
+def generate_insights(ticket_id: int | None = None) -> list:
+    """
+    Função auxiliar ajustada para o contrato do teste unitário test_phase4.py.
+    Diferente do método run(), esta função retorna especificamente a LISTA de strings,
+    conforme exigido pela asserção 'assert isinstance(insights, list)'.
+    """
+    engine = InsightEngine()
+    full_result = engine.run(ticket_id)
+    
+    # Retorna apenas a lista de strings contida na chave "insights"
+    return full_result.get("insights", [])
