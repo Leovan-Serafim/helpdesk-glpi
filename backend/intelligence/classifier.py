@@ -21,3 +21,32 @@ def classify_priority(impact, urgency):
     else:
         return "BAIXA"
 
+def classify_question(question: str) -> str:
+    q = question.lower()
+
+    impacto_terms = [
+        "gargalo", "principal", "maior", "impacta",
+        "crítico", "critico", "trava", "atraso",
+        "pior", "mais problema"
+    ]
+
+    recorrencia_terms = [
+        "recorrente", "frequente", "repetido",
+        "quantos chamados", "quantidade"
+    ]
+
+    equipamento_terms = [
+        "máquina", "equipamento", "computador",
+        "notebook", "pc"
+    ]
+
+    if any(t in q for t in impacto_terms):
+        return "IMPACTO_OPERACIONAL"
+
+    if any(t in q for t in recorrencia_terms):
+        return "RECORRENCIA_CATEGORIA"
+
+    if any(t in q for t in equipamento_terms):
+        return "ANALISE_EQUIPAMENTO"
+
+    return "ANALISE_GERAL"
