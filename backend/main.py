@@ -5,10 +5,15 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
+from intelligence.prompt_builder import build_prompt
 from analytics.insight_engine2 import InsightEngine
 from attendance.llm_client import LLMClient
 from db_connection import get_db_connection
+from intelligence.decision_loader import load_decisions
+from intelligence.decision_classifier import classify_question
+from intelligence.decision_patterns import detect_pattern
+
+
 
 app = FastAPI(
     title="Helpdesk GLPI com Inteligência Artificial (Ollama + Mistral)"
@@ -51,6 +56,11 @@ async def ask(request: Request):
             status_code=400
         )
 
+    decision_knowledge = load_decisions()
+    decision_type = classify_question(question)
+    decision_pattern = detect_pattern(question, decision_type)
+
+
     # === NOVA PARTE: Consulta fresca dos chamados abertos ===
     conn = get_db_connection()
     try:
@@ -81,30 +91,17 @@ async def ask(request: Request):
     print(json.dumps(decision_object, indent=2, ensure_ascii=False))
 
     # Prompt enriquecido com dados reais e atuais
-    prompt = f"""
-Você se chama Roberval e é uma IA de atendimento técnico integrada ao sistema GLPI Inovit.
+    prompt = build_prompt(
+    question=question,
+    chamados_abertos=chamados_abertos,
+    total_abertos=total_abertos,
+    decision_object=decision_object,
+    decision_knowledge=decision_knowledge,
+    decision_type=decision_type.value,
+    decision_pattern=decision_pattern.value
+    )
 
-REGRAS OBRIGATÓRIAS:
-- Use APENAS os dados fornecidos abaixo.
-- NÃO invente informações ou números.
-- Para perguntas sobre quantidade ou lista de chamados em aberto, use EXATAMENTE os dados da seção "CHAMADOS EM ABERTO ATUALIZADOS".
-- Responda em português.
-- Use no máximo 3 frases.
-- Seja direto, profissional e humano.
 
-CHAMADOS EM ABERTO ATUALIZADOS (fonte da verdade - atualizado agora):
-Total em aberto: {total_abertos}
-Lista completa:
-{json.dumps(chamados_abertos, ensure_ascii=False, indent=2)}
-
-ANÁLISE DE RECORRÊNCIA E INSIGHTS (do motor analítico):
-{json.dumps(decision_object, ensure_ascii=False)}
-
-PERGUNTA DO USUÁRIO:
-{question}
-
-RESPOSTA:
-"""
 
     try:
         resposta = llm.generate(prompt)
